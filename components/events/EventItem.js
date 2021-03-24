@@ -1,6 +1,6 @@
 import AddressIcon from "../icons/AddressIcon";
 import DateIcon from "../icons/DateIcon";
-import Button from "../ui/button";
+import Button from "../ui/Button";
 import classes from "./EventItem.module.css";
 import ArrowRightIcon from "../icons/ArrowRightIcon";
 
