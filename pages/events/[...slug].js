@@ -1,10 +1,11 @@
 import { Fragment, useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import useSWR from "swr";
 
 import EventList from "../../components/events/EventList";
 import ResultsTitle from "../../components/events/ResultsTitle";
-import { getFilteredEvents } from "../../helpers/api-util";
+// import { getFilteredEvents } from "../../helpers/api-util";
 import Alert from "../../components/alert/Alert";
 
 export default function FilteredEventsPage() {
@@ -32,7 +33,14 @@ export default function FilteredEventsPage() {
     }
   }, [data]);
 
-  if (!loadedEvents) {
+  const pageHeadData = (year, month) => (
+    <Head>
+      <title>Filtered Events</title>
+      <meta name="description" content={`All events for ${month}/${year}.`} />
+    </Head>
+  );
+
+  if (!loadedEvents || !filter) {
     return <p className="center">Loading...</p>;
   }
 
@@ -48,11 +56,14 @@ export default function FilteredEventsPage() {
     error
   ) {
     return (
-      <Alert
-        alert="Invalid filter. Please adjust your values!"
-        link="/events"
-        title="Show All Events"
-      />
+      <Fragment>
+        {pageHeadData(numYear, numMonth)}
+        <Alert
+          alert="Invalid filter. Please adjust your values!"
+          link="/events"
+          title="Show All Events"
+        />
+      </Fragment>
     );
   }
 
@@ -66,7 +77,10 @@ export default function FilteredEventsPage() {
 
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
-      <Alert alert="No event found!" link="/events" title="Show All Events" />
+      <Fragment>
+        {pageHeadData(numYear, numMonth)}
+        <Alert alert="No event found!" link="/events" title="Show All Events" />
+      </Fragment>
     );
   }
 
@@ -74,6 +88,7 @@ export default function FilteredEventsPage() {
 
   return (
     <Fragment>
+      {pageHeadData(numYear, numMonth)}
       <ResultsTitle date={dateNow} />
       <EventList items={filteredEvents} />
     </Fragment>
