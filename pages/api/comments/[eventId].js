@@ -1,6 +1,22 @@
-export default function handler(req, res) {
+import {
+  connectDatabase,
+  insertDocument,
+  getAllDocument,
+} from "../../../helpers/db-util";
+
+export default async function handler(req, res) {
   const { eventId } = req.query;
 
+  let client;
+
+  try {
+    client = await connectDatabase();
+  } catch (error) {
+    res.status(500).json({ message: "Connecting to the database failed!" });
+    return;
+  }
+
+  // POST
   if (req.method === "POST") {
     const { email, name, text } = req.body;
     if (
@@ -13,24 +29,39 @@ export default function handler(req, res) {
       text.trim() === ""
     ) {
       res.status(422).json({ message: "Invalide comment." });
+      client.close();
       return;
     }
     const newComment = {
-      id: new Date().toISOString(),
       email,
       name,
       text,
       eventId,
     };
-    res.status(201).json({ message: "Added comment.", comment: newComment });
+
+    try {
+      await insertDocument(client, "comments", newComment);
+      res.status(201).json({ message: "Added comment.", comment: newComment });
+    } catch (error) {
+      res.status(500).json({ message: "Inserting data failed!" });
+    }
   }
 
+  // GET
   if (req.method === "GET") {
-    const dummyList = [
-      { id: "c1", name: "Max", text: "First comment" },
-      { id: "c2", name: "Max2", text: "First comment2" },
-      { id: "c3", name: "Max3", text: "First comment3" },
-    ];
-    res.status(200).json({ comments: dummyList });
+    let comments = [];
+
+    try {
+      comments = await getAllDocument(
+        client,
+        "comments",
+        { _id: -1 },
+        { eventId }
+      );
+      res.status(200).json({ comments });
+    } catch (error) {
+      res.status(500).json({ message: "Reading database failed!" });
+    }
   }
+  client.close();
 }

@@ -21,9 +21,6 @@ function NewsletterRegistration() {
       .then((res) => res.json())
       .then((data) => console.log(data))
       .catch((err) => console.log("Error___: ", err));
-    // fetch user input (state or refs)
-    // optional: validate input
-    // send valid data to API
   }
 
   return (

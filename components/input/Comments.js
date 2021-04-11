@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import CommentList from "./CommentList";
+
 import NewComment from "./NewComment";
 import classes from "./Comments.module.css";
 
@@ -13,23 +14,27 @@ function Comments({ eventId }) {
   }
 
   useEffect(() => {
-    fetch(`/api/comments/${eventId}`)
-      .then((res) => res.json())
-      .then(({ comments }) => setComments(comments));
-  }, [eventId]);
+    let cleanupFunction = false;
+    if (showComments) {
+      fetch(`/api/comments/${eventId}`)
+        .then((res) => res.json())
+        .then(({ comments }) => {
+          if (!cleanupFunction) setComments(comments);
+        });
+    }
+    return () => (cleanupFunction = true);
+  }, [showComments, comments]);
 
-  function addCommentHandler({ email, name, text }) {
+  function addCommentHandler(commentData) {
     fetch(`/api/comments/${eventId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email,
-        name,
-        text,
-      }),
-    });
+      body: JSON.stringify(commentData),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data));
   }
 
   return (
